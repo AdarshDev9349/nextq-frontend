@@ -4,7 +4,6 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { TextEffect } from '@/components/motion-primitives/text-effect'
 import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
 import NavbarDemo from '@/components/ui/navbar'
@@ -86,7 +85,7 @@ export default function HeroSection() {
             <div className="mx-auto max-w-7xl px-6 text-center sm:mx-auto lg:mr-auto">
               {/* Heading */}
               <TextEffect
-                preset="fade-in-blur"
+               
                 speedSegment={0.3}
                 as="h1"
                 className="mt-8 text-balance text-5xl sm:text-6xl md:text-6xl lg:mt-16 xl:text-[4.25rem] leading-tight font-bold"
@@ -96,8 +95,8 @@ export default function HeroSection() {
 
               {/* Description */}
               <TextEffect
-                per="line"
-                preset="fade-in-blur"
+            
+                
                 speedSegment={0.1}
                 delay={0.5}
                 as="p"

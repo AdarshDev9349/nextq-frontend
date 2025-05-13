@@ -6,18 +6,18 @@ import React, { JSX } from 'react'
 export const TextEffect = ({
   as: Tag = 'span',
   className = '',
-  preset = 'fade-in-blur',
+ 
   speedSegment = 0.3,
   delay = 0,
   children,
-  per = 'word',
+ 
 }: {
   as?: keyof JSX.IntrinsicElements
   className?: string
-  preset?: 'fade-in-blur'
+
   speedSegment?: number
   delay?: number
-  per?: 'word' | 'line'
+  
   children: string
 }) => {
   const words = children.split(' ')
