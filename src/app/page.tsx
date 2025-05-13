@@ -1,103 +1,152 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { TextEffect } from '@/components/motion-primitives/text-effect'
+import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
+import NavbarDemo from '@/components/ui/navbar'
+
+const transitionVariants = {
+  item: {
+    hidden: {
+      opacity: 0,
+      filter: 'blur(12px)',
+      y: 12,
+    },
+    visible: {
+      opacity: 1,
+      filter: 'blur(0px)',
+      y: 0,
+      transition: {
+        type: 'spring',
+        bounce: 0.3,
+        duration: 1.5,
+      },
+    },
+  },
+}
+
+export default function HeroSection() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <>
+      <NavbarDemo />
+      <main className="bg-background text-foreground overflow-hidden">
+        {/* Decorative Background */}
+        <div
+          aria-hidden
+          className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block"
+        >
+          <div className="w-140 h-320 -translate-y-87.5 absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(0,0%,85%,.08)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]" />
+          <div className="h-320 absolute left-0 top-0 w-60 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.06)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]" />
+          <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
         </div>
+
+        <section>
+          <div className="relative pt-24 md:pt-36">
+            {/* Background Image */}
+            <AnimatedGroup
+              variants={{
+                container: {
+                  visible: {
+                    transition: {
+                      delayChildren: 1,
+                    },
+                  },
+                },
+                item: {
+                  hidden: { opacity: 0, y: 20 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: {
+                      type: 'spring',
+                      bounce: 0.3,
+                      duration: 2,
+                    },
+                  },
+                },
+              }}
+              className="absolute inset-0 -z-20"
+            >
+              <Image
+                src="https://res.cloudinary.com/dqj0v4x2g/image/upload/v1698230005/hero-bg"
+                alt="background"
+                className="absolute inset-x-0 top-56 -z-20 hidden lg:top-32 dark:block"
+                width={3276}
+                height={4095}
+              />
+            </AnimatedGroup>
+
+            {/* Radial overlay */}
+            <div className="absolute inset-0 -z-10 size-full bg-[radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]" />
+
+            <div className="mx-auto max-w-7xl px-6 text-center sm:mx-auto lg:mr-auto">
+              {/* Heading */}
+              <TextEffect
+                preset="fade-in-blur"
+                speedSegment={0.3}
+                as="h1"
+                className="mt-8 text-balance text-5xl sm:text-6xl md:text-6xl lg:mt-16 xl:text-[4.25rem] leading-tight font-bold"
+              >
+                Revolutionizing Exam Preparation with AI
+              </TextEffect>
+
+              {/* Description */}
+              <TextEffect
+                per="line"
+                preset="fade-in-blur"
+                speedSegment={0.1}
+                delay={0.5}
+                as="p"
+                className="mx-auto mt-6 max-w-2xl text-balance text-base sm:text-lg md:text-xl text-muted-foreground"
+              >
+                Utilize AI and Retrieval-Augmented Generation (RAG) for automated exam paper
+                creation and notes summarization. Streamlining exam preparation and enhancing
+                learning efficiency.
+              </TextEffect>
+
+              {/* Buttons */}
+              <AnimatedGroup
+                variants={{
+                  container: {
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.05,
+                        delayChildren: 0.75,
+                      },
+                    },
+                  },
+                  ...transitionVariants,
+                }}
+                className="mt-12 flex flex-col items-center justify-center gap-3 md:flex-row"
+              >
+                <div className="bg-foreground/10 rounded-xl border p-0.5">
+                  <AnimatedGroup variants={transitionVariants}>
+                    <Link
+                      href="/auth/signup"
+                      className="group mx-auto flex w-fit items-center gap-6 rounded-full bg-background p-1 pl-4 shadow-md transition-colors duration-300 hover:bg-accent"
+                    >
+                      <span className="text-sm md:text-base font-medium text-white transition-colors duration-300 group-hover:text-black">
+                        Get Started
+                      </span>
+
+                      <div className="relative size-10 flex rounded-full overflow-hidden bg-white transition-colors duration-500 group-hover:bg-black">
+                        <div className="absolute inset-0 flex w-20 -translate-x-1/2 transform transition-transform duration-500 ease-in-out group-hover:translate-x-0">
+                          <ArrowRight color="white" className="size-5 m-auto" />
+                          <ArrowRight color="black" className="size-5 m-auto" />
+                        </div>
+                      </div>
+                    </Link>
+                  </AnimatedGroup>
+                </div>
+              </AnimatedGroup>
+            </div>
+          </div>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    </>
+  )
 }
