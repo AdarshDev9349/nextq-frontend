@@ -12,17 +12,41 @@ export default function SignUpPage() {
   })
   const router = useRouter()
 
-  const handlesubmit= (e:React.FormEvent  )=>{
-    e.preventDefault()
-    if(FormData.username && FormData.email && FormData.password){
-      router.push('/auth/login')
-      
-     
-    }
-    else{
-      alert("Please fill all fields")
-    }
+const handlesubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const { username, email, password } = FormData;
+
+  if (!username || !email || !password) {
+    alert("Please fill all fields");
+    return;
   }
+
+  try {
+    const res = await fetch('https://68238d0a65ba058033972501.mockapi.io/api/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to create user');
+    }
+
+    alert('✅ Account created successfully!');
+    router.push('/auth/login');
+  } catch (err) {
+    console.error(err);
+    alert('Something went wrong. Please try again.');
+  }
+};
+
 
   return (
     <section className="flex min-h-screen items-center justify-center bg-background px-4 ">

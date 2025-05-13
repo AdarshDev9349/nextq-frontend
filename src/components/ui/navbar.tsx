@@ -1,43 +1,57 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { Button } from '@/components/ui/button'
+"use client";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { name: 'Home', link: '#features' },
-  { name: 'FAQ', link: '#pricing' },
-  { name: 'Contact', link: '#contact' },
-  { name: 'About', link: '#about' },
-]
+  { name: "Home", link: "#" },
+  { name: "FAQ", link: "#faq" },
+  { name: "Contact", link: "#contact" },
+  { name: "About", link: "#about" },
+];
 
 const NavbarDemo = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [activeItem, setActiveItem] = useState<number | null>(null)
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeItem, setActiveItem] = useState<number | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const router = useRouter();
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 100)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    const handleScroll = () => setScrolled(window.scrollY > 100);
+    window.addEventListener("scroll", handleScroll);
+
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setUsername(parsed.username);
+      } catch (e) {
+        console.error("Invalid user JSON in localStorage");
+      }
+    }
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <>
       {/* Navbar */}
       <motion.nav
         className={`fixed top-5 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl px-6 py-3 rounded-3xl backdrop-blur-lg z-50 border border-white/10 transition-colors ${
-          scrolled ? 'bg-[oklch(0.2_0_0/0.8)] shadow-xl' : 'bg-[oklch(0.2_0_0/0.5)]'
+          scrolled
+            ? "bg-[oklch(0.2_0_0/0.8)] shadow-xl"
+            : "bg-[oklch(0.2_0_0/0.5)]"
         }`}
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <div className="flex items-center justify-between text-white">
           {/* Logo */}
           <motion.a
-            href="#"
+            href="/"
             className="flex items-center space-x-3"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -76,15 +90,41 @@ const NavbarDemo = () => {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
-            <Button
-              variant="ghost"
-              className="text-white hover:text-blue-500 transition"
-            >
-              Login
-            </Button>
-            <Button className="bg-blue-600 hover:bg-blue-500 text-white transition">
-              Sign Up
-            </Button>
+            {username ? (
+              <>
+                <span className="text-sm text-zinc-300">
+                  Welcome,{" "}
+                  <span className="font-semibold text-white">{username}</span>
+                </span>
+                <button
+                  className="ml-4 text-zinc-300 hover:text-white transition duration-300 ease-in"
+                  onClick={() => {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+
+                    router.push("/auth/login");
+                  }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  className="text-white hover:text-blue-500 transition"
+                  onClick={() => router.push("/auth/login")}
+                >
+                  Login
+                </Button>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-500 text-white transition"
+                  onClick={() => router.push("/auth/signup")}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -136,14 +176,14 @@ const NavbarDemo = () => {
               initial={{ y: 30 }}
               animate={{ y: 0 }}
               exit={{ y: 30 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
             >
               {navItems.map((item, idx) => (
                 <motion.a
                   key={idx}
                   href={item.link}
                   className="block text-white text-lg font-medium"
-                  whileHover={{ x: 4, color: '#3b82f6' }}
+                  whileHover={{ x: 4, color: "#3b82f6" }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}
@@ -151,22 +191,46 @@ const NavbarDemo = () => {
               ))}
 
               <div className="flex flex-col gap-3 pt-4 border-t border-white/10">
-                <Button variant="default" onClick={() => setIsMobileMenuOpen(false)}>
-                  Login
-                </Button>
-                <Button
-                  className="bg-blue-600 text-white"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Book a Call
-                </Button>
+                {username ? (
+                  <>
+                    <span className="text-white text-center">
+                      welcome, <strong>{username}</strong>
+                    </span>
+                    <button
+                      className="ml-4 text-zinc-300 hover:text-white transition duration-300 ease-in"
+                      onClick={() => {
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("user");
+
+                        router.push("/auth/login");
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="default"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      className="bg-blue-600 text-white"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Button>
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
-  )
-}
+  );
+};
 
-export default NavbarDemo
+export default NavbarDemo;

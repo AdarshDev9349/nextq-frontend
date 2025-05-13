@@ -1,6 +1,44 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function LoginPage() {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  })
+
+const handleclick = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  try {
+    const res = await fetch('https://68238d0a65ba058033972501.mockapi.io/api/users');
+    const users = await res.json();
+
+    const matchedUser = users.find(
+      (user: any) =>
+        user.username === formData.username && user.password === formData.password
+    );
+
+    if (matchedUser) {
+      // ✅ Mock JWT
+      const token = btoa(JSON.stringify({ id: matchedUser.id, username: matchedUser.username }));
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(matchedUser));
+      window.location.href = '/profile'; // or use router.push('/profile')
+    } else {
+      alert('❌ Invalid credentials');
+    }
+  } catch (err) {
+    alert('Something went wrong. Please try again.');
+    console.error(err);
+  }
+};
+
+
+
   return (
     <section className="flex min-h bg-background px-4 py-24  md:py-14 dark:bg-black">
       <form className="max-w-md m-auto w-full bg-black shadow-lg rounded-2xl p-6 md:p-8">
@@ -20,6 +58,7 @@ export default function LoginPage() {
               </label>
               <input
                 type="text"
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 name="username"
                 id="username"
                 required
@@ -34,6 +73,7 @@ export default function LoginPage() {
               </label>
               <input
                 type="password"
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 name="password"
                 id="password"
                 required
@@ -45,6 +85,7 @@ export default function LoginPage() {
             <button
               type="submit"
               className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
+              onClick={(e) => {handleclick(e)}}
             >
               Sign In
             </button>
