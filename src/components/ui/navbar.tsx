@@ -28,7 +28,7 @@ const NavbarDemo = () => {
         const parsed = JSON.parse(storedUser);
         setUsername(parsed.username);
       } catch (e) {
-        console.error("Invalid user JSON in localStorage");
+        console.error("Invalid user JSON in localStorage", e);
       }
     }
 
