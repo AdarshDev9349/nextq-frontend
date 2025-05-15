@@ -3,6 +3,9 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 
 const Page = () => {
   const [user, setUser] = useState<{ username: string } | null>(null);
@@ -19,6 +22,8 @@ const Page = () => {
     { name: 'Section B', numQuestions: '', marksPerQuestion: '', modules: '' },
   ]);
   const [totalMarks, setTotalMarks] = useState('100');
+  const [showEditor, setShowEditor] = useState(false);
+  const [editorContent, setEditorContent] = useState('');
 
   const subjectOptions = [
     'Mathematics',
@@ -76,6 +81,22 @@ const Page = () => {
   };
 
   if (!user) return null;
+
+  // If showEditor is true, show only the editor
+  if (showEditor) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black">
+        <h2 className="text-2xl font-bold text-white mb-4">Edit Your Question Paper</h2>
+        <div className="w-full max-w-3xl">
+          <TiptapEditor
+            content={editorContent}
+            onChange={setEditorContent}
+            className="bg-white text-black rounded min-h-[300px] border border-zinc-700"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -219,7 +240,7 @@ const Page = () => {
             </button>
             <button
               className="mt-4 w-full rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
-              // onClick={...} // Placeholder for next step
+              onClick={() => setShowEditor(true)}
             >
               Start Generating Questions
             </button>
