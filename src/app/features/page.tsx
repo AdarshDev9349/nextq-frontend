@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { FileText, Sparkles, Brain } from 'lucide-react'
+import { BookOpenText, Brain,NotebookText } from 'lucide-react'
 import { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import NavbarDemo from '@/components/ui/navbar'
+import Link from 'next/link'
+
 
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -60,6 +62,7 @@ export default function ProfilePage() {
           <p className="mt-4 text-zinc-400">
             Empowering students and educators with cutting-edge, AI-driven solutions.
           </p>
+          
         </motion.div>
 
         <div className="@min-4xl:max-w-full @min-4xl:grid-cols-3 mx-auto mt-8 grid max-w-sm gap-6 *:text-center md:mt-16">
@@ -71,7 +74,7 @@ export default function ProfilePage() {
               animate="visible"
               custom={i}
               whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.98 }}
+            
             >
               <FeatureCard {...feature} />
             </motion.div>
@@ -84,20 +87,23 @@ export default function ProfilePage() {
 
 const features = [
   {
-    icon: <FileText className="size-6" />,
+    icon: <BookOpenText className="size-8" />,
     title: 'Custom Question Paper Generation',
+    path:"/features/custom-question-paper",
     description:
       'Automatically generate question papers tailored to syllabus, difficulty, and question count using AI.',
   },
   {
-    icon: <Sparkles className="size-6" />,
+    icon:  <NotebookText className="size-8" />,
     title: 'Notes Summarizer',
+     path:"/features/notes-summarizer",
     description:
       'Upload notes in PDF format and get concise, structured summaries for efficient learning.',
   },
   {
-    icon: <Brain className="size-6" />,
+    icon: <Brain className="size-8" />,
     title: 'Question Paper Prediction',
+     path:"/features/questionpaper-ai",
     description:
       'Analyze previous papers and trends to generate likely exam questions for smarter preparation.',
   },
@@ -107,9 +113,11 @@ function FeatureCard({
   icon,
   title,
   description,
+  path,
 }: {
   icon: ReactNode
   title: string
+  path:string
   description: string
 }) {
   return (
@@ -120,6 +128,13 @@ function FeatureCard({
       </CardHeader>
       <CardContent>
         <p className="text-sm text-zinc-400">{description}</p>
+        <Link
+          href={path}
+          className="mt-4 inline-flex items-center text-sm font-medium text-blue-500 hover:text-blue-700"
+        > 
+        Learn More
+        </Link>
+
       </CardContent>
     </Card>
   )

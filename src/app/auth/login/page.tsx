@@ -2,12 +2,14 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   })
+  const router = useRouter()
 
 const handleclick = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -32,7 +34,7 @@ type User = {
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(matchedUser));
-      window.location.href = '/profile'; // or use router.push('/profile')
+      router.push('/features')
     } else {
       alert('❌ Invalid credentials');
     }
