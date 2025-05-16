@@ -31,15 +31,8 @@ import {
   Printer,
   ChevronLeft,
   ChevronRight,
-  Settings,
-  Save,
-  Download,
-  Share2,
-  Sun,
-  Moon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 
 interface TiptapEditorProps {
@@ -47,16 +40,6 @@ interface TiptapEditorProps {
   onChange: (content: string) => void
   className?: string
 }
-
-// Custom implementation of Separator since the user doesn't have it
-const Separator = ({
-  className,
-  orientation = "horizontal",
-}: { className?: string; orientation?: "horizontal" | "vertical" }) => (
-  <div
-    className={cn("shrink-0 bg-border", orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]", className)}
-  />
-)
 
 // Custom implementation of Tooltip since the user doesn't have it
 const Tooltip = ({ children, content }: { children: React.ReactNode; content: string }) => {
@@ -70,15 +53,8 @@ const Tooltip = ({ children, content }: { children: React.ReactNode; content: st
   )
 }
 
-// Custom implementation of ScrollArea since the user doesn't have it
-const ScrollArea = ({ className, children }: { className?: string; children: React.ReactNode }) => (
-  <div className={cn("overflow-auto", className)}>{children}</div>
-)
-
 const TiptapEditor: React.FC<TiptapEditorProps> = ({ content, onChange, className }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [activeTab, setActiveTab] = useState<"format" | "settings">("format")
-  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   // Responsive: close sidebar by default on mobile
   useEffect(() => {
