@@ -85,9 +85,9 @@ const Page = () => {
   // If showEditor is true, show only the editor
   if (showEditor) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black">
-        <h2 className="text-2xl font-bold text-white mb-4">Edit Your Question Paper</h2>
-        <div className="w-full max-w-3xl">
+      <div className="flex flex-col   min-h-screen bg-black">
+
+        <div className="w-full">
           <TiptapEditor
             content={editorContent}
             onChange={setEditorContent}
