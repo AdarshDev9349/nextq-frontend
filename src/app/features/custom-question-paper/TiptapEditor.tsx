@@ -33,7 +33,6 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
 
 interface TiptapEditorProps {
   content: string
