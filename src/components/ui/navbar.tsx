@@ -38,7 +38,7 @@ const NavbarDemo = () => {
     }
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   return (
     <>
