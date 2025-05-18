@@ -1,12 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 import { TextEffect } from '@/components/motion-primitives/text-effect'
 import { AnimatedGroup } from '@/components/motion-primitives/animated-group'
 import NavbarDemo from '@/components/ui/navbar'
+
+
 
 const transitionVariants = {
   item: {
@@ -27,13 +29,13 @@ const transitionVariants = {
     },
   },
 }
-
 export default function HeroSection() {
+
+
   return (
     <>
       <NavbarDemo />
       <main className="bg-background text-foreground overflow-hidden">
-        {/* Decorative Background */}
         <div
           aria-hidden
           className="absolute inset-0 isolate hidden opacity-65 contain-strict lg:block"

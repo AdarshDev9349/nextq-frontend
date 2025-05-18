@@ -29,7 +29,6 @@ type User = {
     );
 
     if (matchedUser) {
-      // ✅ Mock JWT
       const token = btoa(JSON.stringify({ id: matchedUser.id, username: matchedUser.username }));
 
       localStorage.setItem('token', token);

@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const router = useRouter()
 
   useEffect(() => {
+        
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
 

@@ -4,15 +4,17 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { name: "Home", link: "#" },
-  { name: "FAQ", link: "#faq" },
+  { name: "FAQ", link: "/faq" },
   { name: "Contact", link: "#contact" },
   { name: "About", link: "#about" },
 ];
 
 const NavbarDemo = () => {
+    const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState<number | null>(null);
@@ -21,9 +23,9 @@ const NavbarDemo = () => {
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 100);
     window.addEventListener("scroll", handleScroll);
-
+   const notprotected= pathname ==="/"
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    if (storedUser && !notprotected) {
       try {
         const parsed = JSON.parse(storedUser);
         setUsername(parsed.username);
@@ -31,13 +33,16 @@ const NavbarDemo = () => {
         console.error("Invalid user JSON in localStorage", e);
       }
     }
+    else{
+      setUsername(null);
+    }
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <>
-      {/* Navbar */}
+
       <motion.nav
         className={`fixed top-5 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl px-6 py-3 rounded-3xl backdrop-blur-lg z-50 border border-white/10 transition-colors ${
           scrolled
