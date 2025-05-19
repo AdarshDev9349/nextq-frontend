@@ -55,7 +55,7 @@ const Tooltip = ({ children, content }: { children: React.ReactNode; content: st
 const TiptapEditor: React.FC<TiptapEditorProps> = ({ content, onChange, className }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
-  // Responsive: close sidebar by default on mobile
+
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setSidebarCollapsed(true)
@@ -63,7 +63,7 @@ const TiptapEditor: React.FC<TiptapEditorProps> = ({ content, onChange, classNam
     setMounted(true)
   }, [])
 
-  // Ensure theme is only accessed client-side
+
   useEffect(() => {
     setMounted(true)
   }, [])

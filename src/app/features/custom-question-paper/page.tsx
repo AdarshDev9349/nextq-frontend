@@ -24,6 +24,7 @@ const Page = () => {
   const [totalMarks, setTotalMarks] = useState('100');
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const subjectOptions = [
     'Mathematics',
@@ -75,9 +76,32 @@ const Page = () => {
     }, 0);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(2);
+    setLoading(true);
+    setEditorContent("Generating with AI...");
+    try {
+      const res = await fetch("/api/generate-question-paper", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: form.subject === "Other" ? form.customSubject : form.subject,
+          numQuestions: form.numQuestions || sections.reduce((sum, sec) => sum + Number(sec.numQuestions || 0), 0).toString(),
+          marksPerQuestion: sections[0]?.marksPerQuestion || "1",
+        }),
+      });
+      const data = await res.json();
+      console.log("data details",data)
+      if (data.error) {
+        setEditorContent(`AI Error: ${data.error}`);
+      } else {
+        setEditorContent(data.content);
+      }
+    } catch (err) {
+      setEditorContent(`Unexpected error: ${err}`);
+    }
+    setShowEditor(true);
+    setLoading(false);
   };
 
   if (!user) return null;
@@ -210,8 +234,9 @@ const Page = () => {
             <button
               type="submit"
               className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition mt-4"
+              disabled={loading}
             >
-              Continue
+              {loading ? "Generating..." : "Continue"}
             </button>
           </form>
         ) : (
