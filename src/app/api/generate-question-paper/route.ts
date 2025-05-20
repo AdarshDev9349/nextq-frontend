@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { subject, numQuestions, marksPerQuestion } = await req.json();
+  const { prompt } = await req.json();
 
   const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || "";
-
-  const prompt = `Generate a question paper for the subject "${subject}". Include ${numQuestions} questions, each carrying ${marksPerQuestion} marks. Format the output as an HTML question paper with a heading, numbered questions, and clear structure.`;
 
   const response = await fetch("https://api.together.xyz/v1/completions", {
     method: "POST",

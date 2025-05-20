@@ -7,6 +7,31 @@ import dynamic from 'next/dynamic';
 
 const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 
+function buildAIPrompt({
+  subject,
+  module,
+  sections,
+  totalMarks,
+}: {
+  subject: string;
+  module: string;
+  sections: { name: string; numQuestions: string; marksPerQuestion: string; modules: string }[];
+  totalMarks: string;
+}) {
+  let prompt = `Generate a question paper for the subject "${subject}" (Module: ${module}).\n`;
+  prompt += `The total marks should be ${totalMarks}.\n`;
+  prompt += `The paper should be divided into the following sections:\n`;
+
+  sections.forEach((sec) => {
+    prompt += `Section ${sec.name}: ${sec.numQuestions} questions, ${sec.marksPerQuestion} marks each. `;
+    prompt += `Each question must require a detailed, descriptive answer appropriate for the marks allotted. Do not include short-answer, definition, or one-line questions. Ensure the number of questions and marks per question exactly match the instructions.\n`;
+  });
+
+  prompt += `Format the output as an HTML question paper with a heading, section headings, and numbered questions under each section.`;
+
+  return prompt;
+}
+
 const Page = () => {
   const [user, setUser] = useState<{ username: string } | null>(null);
   const [step, setStep] = useState(1);
@@ -25,15 +50,15 @@ const Page = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const subjectOptions = [
+  const [subjectOptions, setSubjectOptions] = useState([
     'Mathematics',
     'Physics',
     'Chemistry',
     'Computer Science',
     'Biology',
     'Other',
-  ];
+  ]);
+  const [subjectsLoading, setSubjectsLoading] = useState(false);
 
   const router = useRouter();
 
@@ -47,6 +72,32 @@ const Page = () => {
       setUser(JSON.parse(userData));
     }
   }, [router]);
+
+  useEffect(() => {
+    if (form.semester && form.semester !== "" && form.semester !== "Other") {
+      setSubjectsLoading(true);
+      fetch(`/api/list-sem-pdfs?semester=${encodeURIComponent(form.semester)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.files && data.files.length > 0) {
+            setSubjectOptions(data.files.map((f: { name: string }) => f.name));
+          } else {
+            setSubjectOptions(['Other']);
+          }
+        })
+        .catch(() => setSubjectOptions(['Other']))
+        .finally(() => setSubjectsLoading(false));
+    } else {
+      setSubjectOptions([
+        'Mathematics',
+        'Physics',
+        'Chemistry',
+        'Computer Science',
+        'Biology',
+        'Other',
+      ]);
+    }
+  }, [form.semester]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -85,13 +136,15 @@ const Page = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subject: form.subject === "Other" ? form.customSubject : form.subject,
-          numQuestions: form.numQuestions || sections.reduce((sum, sec) => sum + Number(sec.numQuestions || 0), 0).toString(),
-          marksPerQuestion: sections[0]?.marksPerQuestion || "1",
+          prompt: buildAIPrompt({
+            subject: form.subject === "Other" ? form.customSubject : form.subject,
+            module: form.module,
+            sections,
+            totalMarks,
+          }),
         }),
       });
       const data = await res.json();
-      console.log("data details",data)
       if (data.error) {
         setEditorContent(`AI Error: ${data.error}`);
       } else {
@@ -144,9 +197,13 @@ const Page = () => {
                   className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Select Semester</option>
-                  {[...Array(8)].map((_, i) => (
-                    <option key={i + 1} value={`${i + 1}`}>{`${i + 1} Semester`}</option>
-                  ))}
+                  <option value="1-2">Semester 1 & 2</option>
+                  <option value="3">Semester 3</option>
+                  <option value="4">Semester 4</option>
+                  <option value="5">Semester 5</option>
+                  <option value="6">Semester 6</option>
+                  <option value="7">Semester 7</option>
+                  <option value="8">Semester 8</option>
                 </select>
               </div>
               <div>
@@ -157,23 +214,13 @@ const Page = () => {
                   onChange={handleChange}
                   required
                   className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={subjectsLoading}
                 >
-                  <option value="">Select Subject</option>
+                  <option value="">{subjectsLoading ? 'Loading subjects...' : 'Select Subject'}</option>
                   {subjectOptions.map((subj) => (
                     <option key={subj} value={subj}>{subj}</option>
                   ))}
                 </select>
-                {form.subject === 'Other' && (
-                  <input
-                    type="text"
-                    name="customSubject"
-                    value={form.customSubject}
-                    onChange={handleChange}
-                    required
-                    className="mt-2 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter subject name"
-                  />
-                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-1">Module</label>
