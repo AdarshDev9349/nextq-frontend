@@ -9,26 +9,27 @@ const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 
 function buildAIPrompt({
   subject,
-  module,
   sections,
   totalMarks,
 }: {
   subject: string;
-  module: string;
   sections: { name: string; numQuestions: string; marksPerQuestion: string; modules: string }[];
   totalMarks: string;
 }) {
-  let prompt = `Generate a question paper for the subject "${subject}" (Module: ${module}).\n`;
-  prompt += `The total marks should be ${totalMarks}.\n`;
-  prompt += `The paper should be divided into the following sections:\n`;
-
+  let prompt = `You are an exam setter. Fill in the following question paper template for the subject '${subject}'. The total marks should be ${totalMarks}.\n`;
+  prompt += `\nTEMPLATE (fill in only the questions, do not change the structure):\n`;
+  prompt += `<h1 style="text-align:center;">[INSTITUTION NAME]</h1>\n`;
+  prompt += `<h2 style="text-align:center;">${subject}</h2>\n`;
+  prompt += `<div style="text-align:right;"><b>Total Marks:</b> ${totalMarks}</div>\n`;
+  prompt += `<hr />\n`;
   sections.forEach((sec) => {
-    prompt += `Section ${sec.name}: ${sec.numQuestions} questions, ${sec.marksPerQuestion} marks each. `;
-    prompt += `Each question must require a detailed, descriptive answer appropriate for the marks allotted. Do not include short-answer, definition, or one-line questions. Ensure the number of questions and marks per question exactly match the instructions.\n`;
+    prompt += `<h3>${sec.name} (${sec.marksPerQuestion} marks each)</h3>\n<ol>\n`;
+    for (let i = 1; i <= Number(sec.numQuestions); i++) {
+      prompt += `<li>[QUESTION]</li>\n`;
+    }
+    prompt += `</ol>\n`;
   });
-
-  prompt += `Format the output as an HTML question paper with a heading, section headings, and numbered questions under each section.`;
-
+  prompt += `\nReplace [QUESTION] with appropriate, descriptive questions for the subject. Do not include any headings, explanations, or extra text outside the template. Only fill in the questions.`;
   return prompt;
 }
 
@@ -51,11 +52,7 @@ const Page = () => {
   const [editorContent, setEditorContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [subjectOptions, setSubjectOptions] = useState([
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Computer Science',
-    'Biology',
+    'none',
     'Other',
   ]);
   const [subjectsLoading, setSubjectsLoading] = useState(false);
@@ -80,7 +77,7 @@ const Page = () => {
         .then(res => res.json())
         .then(data => {
           if (data.files && data.files.length > 0) {
-            setSubjectOptions(data.files.map((f: { name: string }) => f.name));
+            setSubjectOptions(data.files.map((f: { name: string }) => f.name.replace(/\.pdf$/i, "")));
           } else {
             setSubjectOptions(['Other']);
           }
@@ -89,12 +86,7 @@ const Page = () => {
         .finally(() => setSubjectsLoading(false));
     } else {
       setSubjectOptions([
-        'Mathematics',
-        'Physics',
-        'Chemistry',
-        'Computer Science',
-        'Biology',
-        'Other',
+   'none'
       ]);
     }
   }, [form.semester]);
@@ -138,7 +130,6 @@ const Page = () => {
         body: JSON.stringify({
           prompt: buildAIPrompt({
             subject: form.subject === "Other" ? form.customSubject : form.subject,
-            module: form.module,
             sections,
             totalMarks,
           }),
