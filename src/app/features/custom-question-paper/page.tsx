@@ -20,12 +20,19 @@ function buildAIPrompt({
   moduleText?: string;
   module?: string;
 }) {
-  let prompt = `You are an exam setter. Use the following syllabus content for ${module} to generate questions.\n\n`;
-  if (moduleText) {
-    prompt += ` identify the topic of the particular subject from this {${moduleText}}.....use this content just to know which topic question should be generated for the subject ${subject}.\n\n`;
-  }
-  prompt += `Fill in the following question paper template for the subject '${subject}'. The total marks should be ${totalMarks}.\n`;
-  prompt += `\nTEMPLATE (fill in only the questions, do not change the structure):\n`;
+  let prompt = `You are an expert university exam setter. Strictly follow these instructions:\n\n`;
+  prompt += `1. The following text is extracted from the PDF for module '${module}'. It may contain sample/model questions or content related to a topic, but it is NOT the full syllabus.\n`;
+  prompt += `2. Carefully read and understand the topic or subject area that this text is about:\n"""\n${moduleText}\n"""\n`;
+  prompt += `3. Based on your understanding of the topic from the above text, generate new, original questions for the subject '${subject}' as per the template below.\n`;
+  prompt += `4. DO NOT copy or paraphrase the sample/model questions from the text. Instead, infer the topic and create fresh questions relevant to that topic.\n`;
+  prompt += `5. Fill in the question paper template below. The total marks must be ${totalMarks}.\n`;
+  prompt += `6. DO NOT add, remove, or change any sections, headings, or formatting in the template.\n`;
+  prompt += `7. Replace ONLY the [QUESTION] placeholders with appropriate, descriptive questions for the inferred topic.\n`;
+  prompt += `8. DO NOT add any explanations, notes, extra text, or repeat the template. Output ONLY the completed template.\n`;
+  prompt += `9. Any output that does not strictly follow these rules will be rejected.\n`;
+  prompt += `10. DO NOT generate or fill in any questions unless the placeholder is [QUESTION]. If the template has 10 [QUESTION]s, fill all 10. If it has 5, fill 5.\n`;
+  prompt += `11. DO NOT generate any questions for sections or marks not present in the template.\n\n`;
+  prompt += `TEMPLATE (fill in only the [QUESTION]s):\n`;
   prompt += `<h1 style="text-align:center;">[INSTITUTION NAME]</h1>\n`;
   prompt += `<h2 style="text-align:center;">${subject}</h2>\n`;
   prompt += `<div style="text-align:right;"><b>Total Marks:</b> ${totalMarks}</div>\n`;
@@ -37,10 +44,8 @@ function buildAIPrompt({
     }
     prompt += `</ol>\n`;
   });
-  prompt += `\nReplace [QUESTION] with appropriate, descriptive questions for the subject and module, related to the reference content topic above . Do not include any headings, explanations, or extra text outside the template or any notes from you. Only fill in the questions.`;
-  console.log("Generated AI prompt:", prompt); // Debugging line to check the generated prompt
+  prompt += `\nRemember: Output ONLY the completed template with the [QUESTION]s filled in. Do not include any other text.`;
   return prompt;
-  
 }
 
 
@@ -167,7 +172,37 @@ const Page = () => {
       if (result.error) {
         setEditorContent(`AI Error: ${result.error}`);
       } else {
-        setEditorContent(result.content);
+        // --- POST-PROCESSING: Only allow expected HTML tags and filled-in questions ---
+        interface AIResult {
+          content: string;
+          error?: string;
+        }
+
+        const allowedTags: RegExp[] = [
+          /^<h1[^>]*>.*<\/h1>$/i,
+          /^<h2[^>]*>.*<\/h2>$/i,
+          /^<div[^>]*>.*<\/div>$/i,
+          /^<hr\s*\/>$/i,
+          /^<h3[^>]*>.*<\/h3>$/i,
+          /^<ol>$/i,
+          /^<\/ol>$/i,
+          /^<li>.*<\/li>$/i
+        ];
+
+        const filtered: string = (result as AIResult).content
+          .split(/\r?\n/)
+          .map((line: string) => line.trim())
+          .filter((line: string) => {
+            // Only allow lines that are empty or match allowed tags
+            if (line === '') return true;
+            if (allowedTags.some((re: RegExp) => re.test(line))) return true;
+            // Additionally, allow only [QUESTION] placeholders inside <li> tags
+            if (/^<li>\[QUESTION\]<\/li>$/i.test(line)) return true;
+            // For extra strictness, block any line that looks like a section heading not in a tag
+            return false;
+          })
+          .join('\n');
+        setEditorContent(filtered);
       }
     } catch (err) {
       setEditorContent(`Unexpected error: ${err}`);
