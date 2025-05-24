@@ -10,10 +10,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const semester = searchParams.get("semester") || "";
     const pdfName = searchParams.get("pdfName") || "";
-    const module = searchParams.get("module") || "";
+    const moduleParam = searchParams.get("module") || ""; // Avoid using 'module' as a variable name
     const apiKey = process.env.GOOGLE_DRIVE_API_KEY;
 
-    if (!semester || !pdfName || !module) {
+    if (!semester || !pdfName || !moduleParam) {
       return NextResponse.json({ error: "Missing query parameters: semester, pdfName, or module" }, { status: 400 });
     }
 
@@ -46,37 +46,35 @@ export async function GET(req: NextRequest) {
     // Convert Buffer to Uint8Array for pdfjs
     const uint8Array = new Uint8Array(buffer);
 
-    // Set up pdfjs worker for Node.js
+    // Step 3: Extract text using pdfjs
+    let allText = "";
     try {
-      (pdfjsLib as any).GlobalWorkerOptions.workerSrc = require("pdfjs-dist/build/pdf.worker.js");
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      (pdfjsLib as typeof import('pdfjs-dist')).GlobalWorkerOptions.workerSrc = require("pdfjs-dist/build/pdf.worker.js");
     } catch (err) {
       return NextResponse.json({ error: "Failed to set pdfjs workerSrc", details: String(err) }, { status: 500 });
     }
 
-    // Step 3: Extract text using pdfjs
-    let allText = "";
     try {
       const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
       const pdfDocument = await loadingTask.promise;
       for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
         const page = await pdfDocument.getPage(pageNum);
         const content = await page.getTextContent();
-        const pageText = content.items.map((item: any) => item.str).join(" ");
+        const pageText = (content.items as { str: string }[]).map((item) => item.str).join(" ");
         allText += pageText + "\n";
-        console.log("Extracted text from page", pageNum, ":", pageText.slice(0, 100)); // Debug: log first 100 chars of each page
       }
     } catch (err) {
       return NextResponse.json({ error: "Failed to extract text with pdfjs", details: String(err) }, { status: 500 });
     }
 
-    const extractedText = extractModuleText(allText, module);
+    const extractedText = extractModuleText(allText, moduleParam);
     if (!extractedText) {
-      // Debug: return first 500 chars, all detected module headers, and the module param
       const moduleHeaderRegex = /Module\s*\d+/gi;
       const foundHeaders = allText.match(moduleHeaderRegex) || [];
       return NextResponse.json({
-        error: `Module \"${module}\" not found in PDF`,
-        moduleParam: module,
+        error: `Module \"${moduleParam}\" not found in PDF`,
+        moduleParam,
         preview: allText.slice(0, 500),
         foundHeaders,
         allTextLength: allText.length
@@ -84,13 +82,14 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json({ text: extractedText });
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("API Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-function extractModuleText(text: string, module: string): string | null {
-  const pattern = new RegExp(`(${module})\\s*[:\\-]?\\s*([\\s\\S]*?)(?=Module\\s+\\d+|$)`, 'i');
+function extractModuleText(text: string, moduleParam: string): string | null {
+  const pattern = new RegExp(`(${moduleParam})\\s*[:\\-]?\\s*([\\s\\S]*?)(?=Module\\s+\\d+|$)`, 'i');
   const match = text.match(pattern);
   return match ? match[2].trim() : null;
 }

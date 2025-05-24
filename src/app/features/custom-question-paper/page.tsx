@@ -15,7 +15,7 @@ function buildAIPrompt({
   module = '',
 }: {
   subject: string;
-  sections: { name: string; numQuestions: string; marksPerQuestion: string; modules: string }[];
+  sections: { name: string; numQuestions: string; marksPerQuestion: string }[];
   totalMarks: string;
   moduleText?: string;
   module?: string;
@@ -52,8 +52,8 @@ const Page = () => {
     numQuestions: '',
   });
   const [sections, setSections] = useState([
-    { name: 'Section A', numQuestions: '', marksPerQuestion: '', modules: '' },
-    { name: 'Section B', numQuestions: '', marksPerQuestion: '', modules: '' },
+    { name: 'Section A', numQuestions: '', marksPerQuestion: '' },
+    { name: 'Section B', numQuestions: '', marksPerQuestion: '' },
   ]);
   const [totalMarks, setTotalMarks] = useState('100');
   const [showEditor, setShowEditor] = useState(false);
@@ -101,14 +101,14 @@ const Page = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSectionChange = (idx: number, field: 'name' | 'numQuestions' | 'marksPerQuestion' | 'modules', value: string) => {
+  const handleSectionChange = (idx: number, field: 'name' | 'numQuestions' | 'marksPerQuestion', value: string) => {
     const updated = [...sections];
     updated[idx][field] = value;
     setSections(updated);
   };
 
   const addSection = () => {
-    setSections([...sections, { name: `Section ${String.fromCharCode(65 + sections.length)}`, numQuestions: '', marksPerQuestion: '', modules: '' }]);
+    setSections([...sections, { name: `Section ${String.fromCharCode(65 + sections.length)}`, numQuestions: '', marksPerQuestion: '' }]);
   };
 
   const removeSection = (idx: number) => {
