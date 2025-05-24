@@ -11,12 +11,20 @@ function buildAIPrompt({
   subject,
   sections,
   totalMarks,
+  moduleText = '',
+  module = '',
 }: {
   subject: string;
   sections: { name: string; numQuestions: string; marksPerQuestion: string; modules: string }[];
   totalMarks: string;
+  moduleText?: string;
+  module?: string;
 }) {
-  let prompt = `You are an exam setter. Fill in the following question paper template for the subject '${subject}'. The total marks should be ${totalMarks}.\n`;
+  let prompt = `You are an exam setter. Use the following syllabus content for ${module} to generate questions.\n\n`;
+  if (moduleText) {
+    prompt += ` identify the topic of the particular subject from this {${moduleText}} and use this content as the reference for the topic`;
+  }
+  prompt += `Fill in the following question paper template for the subject '${subject}'. The total marks should be ${totalMarks}.\n`;
   prompt += `\nTEMPLATE (fill in only the questions, do not change the structure):\n`;
   prompt += `<h1 style="text-align:center;">[INSTITUTION NAME]</h1>\n`;
   prompt += `<h2 style="text-align:center;">${subject}</h2>\n`;
@@ -29,7 +37,7 @@ function buildAIPrompt({
     }
     prompt += `</ol>\n`;
   });
-  prompt += `\nReplace [QUESTION] with appropriate, descriptive questions for the subject. Do not include any headings, explanations, or extra text outside the template. Only fill in the questions.`;
+  prompt += `\nReplace [QUESTION] with appropriate, descriptive questions for the subject and module, using the syllabus content above. Do not include any headings, explanations, or extra text outside the template. Only fill in the questions.`;
   return prompt;
 }
 
@@ -40,7 +48,7 @@ const Page = () => {
     semester: '',
     subject: '',
     customSubject: '',
-    module: '',
+    module: '', // will be set via dropdown now
     numQuestions: '',
   });
   const [sections, setSections] = useState([
@@ -75,7 +83,7 @@ const Page = () => {
       setSubjectsLoading(true);
       fetch(`/api/list-sem-pdfs?semester=${encodeURIComponent(form.semester)}`)
         .then(res => res.json())
-        .then(data => {
+        .then((data) => {
           if (data.files && data.files.length > 0) {
             setSubjectOptions(data.files.map((f: { name: string }) => f.name.replace(/\.pdf$/i, "")));
           } else {
@@ -85,9 +93,7 @@ const Page = () => {
         .catch(() => setSubjectOptions(['Other']))
         .finally(() => setSubjectsLoading(false));
     } else {
-      setSubjectOptions([
-   'none'
-      ]);
+      setSubjectOptions(['none']);
     }
   }, [form.semester]);
 
@@ -124,6 +130,13 @@ const Page = () => {
     setLoading(true);
     setEditorContent("Generating with AI...");
     try {
+      let moduleText = '';
+      if (form.semester && form.subject && form.module) {
+        const pdfName = form.subject + '.pdf';
+        const res = await fetch(`/api/extract-pdf-module?semester=${encodeURIComponent(form.semester)}&pdfName=${encodeURIComponent(pdfName)}&module=${encodeURIComponent(form.module)}`);
+        const data = await res.json();
+        if (data.text) moduleText = data.text;
+      }
       const res = await fetch("/api/generate-question-paper", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,14 +145,26 @@ const Page = () => {
             subject: form.subject === "Other" ? form.customSubject : form.subject,
             sections,
             totalMarks,
+            moduleText,
+            module: form.module,
           }),
         }),
       });
-      const data = await res.json();
-      if (data.error) {
-        setEditorContent(`AI Error: ${data.error}`);
+      // Fix: Always parse as JSON, but check for HTML error (Vercel/Next.js error page)
+      const text = await res.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (err) {
+        setEditorContent(`Server Error: ${text}`);
+        setShowEditor(true);
+        setLoading(false);
+        return;
+      }
+      if (result.error) {
+        setEditorContent(`AI Error: ${result.error}`);
       } else {
-        setEditorContent(data.content);
+        setEditorContent(result.content);
       }
     } catch (err) {
       setEditorContent(`Unexpected error: ${err}`);
@@ -215,15 +240,20 @@ const Page = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-1">Module</label>
-                <input
-                  type="text"
+                <select
                   name="module"
                   value={form.module}
                   onChange={handleChange}
                   required
                   className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. Module 1"
-                />
+                >
+                  <option value="">Select Module</option>
+                  <option value="Module 1">Module 1</option>
+                  <option value="Module 2">Module 2</option>
+                  <option value="Module 3">Module 3</option>
+                  <option value="Module 4">Module 4</option>
+                  <option value="Module 5">Module 5</option>
+                </select>
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-zinc-300 mb-1">Smart Mark Distribution</label>
