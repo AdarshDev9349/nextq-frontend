@@ -15,14 +15,14 @@ function buildAIPrompt({
   module = '',
 }: {
   subject: string;
-  sections: { name: string; numQuestions: string; marksPerQuestion: string }[];
+  sections: { name: string; numQuestions: string; marksPerQuestion: string; modules: string }[];
   totalMarks: string;
   moduleText?: string;
   module?: string;
 }) {
   let prompt = `You are an exam setter. Use the following syllabus content for ${module} to generate questions.\n\n`;
   if (moduleText) {
-    prompt += ` identify the topic of the particular subject from this {${moduleText}} and use this content as the reference for the topic`;
+    prompt += ` identify the topic of the particular subject from this {${moduleText}}.....use this content just to know which topic question should be generated for the subject ${subject}.\n\n`;
   }
   prompt += `Fill in the following question paper template for the subject '${subject}'. The total marks should be ${totalMarks}.\n`;
   prompt += `\nTEMPLATE (fill in only the questions, do not change the structure):\n`;
@@ -37,9 +37,12 @@ function buildAIPrompt({
     }
     prompt += `</ol>\n`;
   });
-  prompt += `\nReplace [QUESTION] with appropriate, descriptive questions for the subject and module, using the syllabus content above. Do not include any headings, explanations, or extra text outside the template. Only fill in the questions.`;
+  prompt += `\nReplace [QUESTION] with appropriate, descriptive questions for the subject and module, related to the reference content topic above . Do not include any headings, explanations, or extra text outside the template or any notes from you. Only fill in the questions.`;
+  console.log("Generated AI prompt:", prompt); // Debugging line to check the generated prompt
   return prompt;
+  
 }
+
 
 const Page = () => {
   const [user, setUser] = useState<{ username: string } | null>(null);
@@ -52,8 +55,8 @@ const Page = () => {
     numQuestions: '',
   });
   const [sections, setSections] = useState([
-    { name: 'Section A', numQuestions: '', marksPerQuestion: '' },
-    { name: 'Section B', numQuestions: '', marksPerQuestion: '' },
+    { name: 'Section A', numQuestions: '', marksPerQuestion: '', modules: '' },
+    { name: 'Section B', numQuestions: '', marksPerQuestion: '', modules: '' },
   ]);
   const [totalMarks, setTotalMarks] = useState('100');
   const [showEditor, setShowEditor] = useState(false);
@@ -101,14 +104,14 @@ const Page = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSectionChange = (idx: number, field: 'name' | 'numQuestions' | 'marksPerQuestion', value: string) => {
+  const handleSectionChange = (idx: number, field: 'name' | 'numQuestions' | 'marksPerQuestion' | 'modules', value: string) => {
     const updated = [...sections];
     updated[idx][field] = value;
     setSections(updated);
   };
 
   const addSection = () => {
-    setSections([...sections, { name: `Section ${String.fromCharCode(65 + sections.length)}`, numQuestions: '', marksPerQuestion: '' }]);
+    setSections([...sections, { name: `Section ${String.fromCharCode(65 + sections.length)}`, numQuestions: '', marksPerQuestion: '', modules: '' }]);
   };
 
   const removeSection = (idx: number) => {
@@ -155,7 +158,7 @@ const Page = () => {
       let result;
       try {
         result = JSON.parse(text);
-      } catch {
+      } catch (err) {
         setEditorContent(`Server Error: ${text}`);
         setShowEditor(true);
         setLoading(false);
