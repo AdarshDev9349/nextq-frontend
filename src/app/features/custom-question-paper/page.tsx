@@ -159,7 +159,7 @@ const Page = () => {
       try {
         result = JSON.parse(text);
       } catch (err) {
-        setEditorContent(`Server Error: ${text}`);
+        setEditorContent(`Server Error: ${text},error: ${err}`);
         setShowEditor(true);
         setLoading(false);
         return;
