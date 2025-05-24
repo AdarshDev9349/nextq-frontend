@@ -155,7 +155,7 @@ const Page = () => {
       let result;
       try {
         result = JSON.parse(text);
-      } catch (err) {
+      } catch {
         setEditorContent(`Server Error: ${text}`);
         setShowEditor(true);
         setLoading(false);
