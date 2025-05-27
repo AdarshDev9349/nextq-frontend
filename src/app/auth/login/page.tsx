@@ -22,7 +22,6 @@ type User = {
   try {
     const res = await fetch('https://68238d0a65ba058033972501.mockapi.io/api/users');
     const users = await res.json();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
     const matchedUser = users.find(
       (user:User) =>
         user.username === formData.username && user.password === formData.password

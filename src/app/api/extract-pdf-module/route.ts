@@ -123,7 +123,6 @@ export async function GET(req: NextRequest) {
     // Return the top chunks as context
     return NextResponse.json({ text: topChunks.join('\n\n') });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("API Error:", err);
     return NextResponse.json({ error: "Internal server error", details: String(err) }, { status: 500 });
   }
