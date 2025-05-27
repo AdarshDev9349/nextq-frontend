@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { name: "Home", link: "#" },
+  { name: "Home", link: "/" },
   { name: "FAQ", link: "/faq" },
-  { name: "Contact", link: "#contact" },
-  { name: "About", link: "#about" },
+  { name: "Contact", link: "/contact" },
+  { name: "About", link: "/about" },
 ];
 
 const NavbarDemo = () => {

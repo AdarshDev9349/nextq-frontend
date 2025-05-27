@@ -122,6 +122,10 @@ function FeatureCard({
   description: string
 }) {
   return (
+          <Link
+          href={path}
+          className="mt-4 inline-flex items-center text-sm font-medium "
+        > 
     <Card className="group bg-black border border-zinc-800 shadow-md transition-all duration-200 hover:border-white/20 hover:shadow-lg">
       <CardHeader className="pb-3">
         <CardDecorator>{icon}</CardDecorator>
@@ -129,15 +133,15 @@ function FeatureCard({
       </CardHeader>
       <CardContent>
         <p className="text-sm text-zinc-400">{description}</p>
-        <Link
-          href={path}
-          className="mt-4 inline-flex items-center text-sm font-medium text-blue-500 hover:text-blue-700"
-        > 
-        Learn More
-        </Link>
+  
+         <br />
+         <p className='text-blue-600'>Learn more</p>
+         
+        
 
       </CardContent>
     </Card>
+    </Link>
   )
 }
 

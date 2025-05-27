@@ -1,9 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 import { semesterFolderLinks, extractDriveFolderId } from "@/lib/semesterFolders";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+import fetch from 'node-fetch'; // For Together AI API
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+
+function chunkTextByModule(text: string, moduleParam: string): string[] {
+  // Try to split by module headings first
+  const moduleRegex = /Module\s*\d+[:\-]?/gi;
+  const splits = text.split(moduleRegex).map(s => s.trim()).filter(Boolean);
+  // If splitting by module gives too few chunks, fallback to paragraph split
+  if (splits.length < 2) {
+    return text.split(/\n{2,}/).map(s => s.trim()).filter(Boolean);
+  }
+  return splits;
+}
+
+// Helper: Get Together AI embedding for a chunk
+async function getTogetherEmbedding(text: string): Promise<number[]> {
+  const res = await fetch('https://api.together.xyz/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.TOGETHER_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'togethercomputer/m2-bert-80M-8k-retrieval',
+      input: [text],
+    }),
+  });
+  const json = (await res.json()) as { data?: { embedding: number[] }[] };
+  if (!json.data || !json.data[0] || !json.data[0].embedding) throw new Error('Embedding failed');
+  return json.data[0].embedding;
+}
+
+// Helper: Cosine similarity
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,9 +81,9 @@ export async function GET(req: NextRequest) {
     const fileId = fileIdResult;
 
     // Step 2: Download the PDF
-    const buffer = await downloadPdfFromDrive(fileId, apiKey);
+    const { buffer, debug } = await downloadPdfFromDrive(fileId, apiKey);
     if (!buffer) {
-      return NextResponse.json({ error: "Failed to download PDF from Drive" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to download PDF from Drive", debug }, { status: 500 });
     }
     // Convert Buffer to Uint8Array for pdfjs
     const uint8Array = new Uint8Array(buffer);
@@ -68,23 +110,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Failed to extract text with pdfjs", details: String(err) }, { status: 500 });
     }
 
-    const extractedText = extractModuleText(allText, moduleParam);
-    if (!extractedText) {
-      const moduleHeaderRegex = /Module\s*\d+/gi;
-      const foundHeaders = allText.match(moduleHeaderRegex) || [];
-      return NextResponse.json({
-        error: `Module \"${moduleParam}\" not found in PDF`,
-        moduleParam,
-        preview: allText.slice(0, 500),
-        foundHeaders,
-        allTextLength: allText.length
-      }, { status: 404 });
-    }
-    return NextResponse.json({ text: extractedText });
+    // --- RAG: Chunk, Embed, Retrieve ---
+    const chunks = chunkTextByModule(allText, moduleParam);
+    // Embed all chunks
+    const chunkEmbeddings = await Promise.all(chunks.map(chunk => getTogetherEmbedding(chunk)));
+    // Embed the module query
+    const queryEmbedding = await getTogetherEmbedding(moduleParam);
+    // Compute similarity
+    const scored = chunks.map((chunk, i) => ({ chunk, score: cosineSimilarity(chunkEmbeddings[i], queryEmbedding) }));
+    // Sort by score, take top 3
+    const topChunks = scored.sort((a, b) => b.score - a.score).slice(0, 3).map(s => s.chunk);
+    // Return the top chunks as context
+    return NextResponse.json({ text: topChunks.join('\n\n') });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("API Error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error", details: String(err) }, { status: 500 });
   }
 }
 
@@ -97,15 +138,24 @@ function extractModuleText(text: string, moduleParam: string): string | null {
 async function findPdfInDrive(folderId: string, fileName: string, apiKey?: string): Promise<string | null> {
   const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+name='${fileName}'&key=${apiKey}&fields=files(id,name,mimeType)`;
   const res = await fetch(url);
-  const json = await res.json();
+  const json = (await res.json()) as { files?: { id: string; name: string; mimeType: string }[] };
   if (!json.files || json.files.length === 0) return null;
   return json.files[0].id;
 }
 
-async function downloadPdfFromDrive(fileId: string, apiKey?: string): Promise<Buffer | null> {
+async function downloadPdfFromDrive(fileId: string, apiKey?: string): Promise<{ buffer: Buffer | null, debug: any }> {
   const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
   const res = await fetch(url);
-  if (!res.ok) return null;
+  const debug = {
+    url,
+    status: res.status,
+    statusText: res.statusText,
+    headers: Object.fromEntries(res.headers.entries()),
+    googleDriveApiKey: !!apiKey,
+    // Try to get error body if not ok
+    errorBody: !res.ok ? await res.text() : undefined
+  };
+  if (!res.ok) return { buffer: null, debug };
   const buffer = await res.arrayBuffer();
-  return Buffer.from(buffer);
+  return { buffer: Buffer.from(buffer), debug };
 }
