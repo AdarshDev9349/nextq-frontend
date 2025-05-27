@@ -177,7 +177,7 @@ const FAQPage = () => {
               </h1>
             </div>
             <p className="text-xl text-zinc-400 max-w-3xl mx-auto leading-relaxed">
-              Find answers to common questions about NextQ's AI-powered educational platform. Can't find what you're
+              Find answers to common questions about NextQ&apos;s AI-powered educational platform. Can&apos;t find what you&apos;re
               looking for? Contact our support team.
             </p>
           </div>
@@ -274,7 +274,7 @@ const FAQPage = () => {
               <h3 className="text-2xl font-bold text-white">Still have questions?</h3>
             </div>
             <p className="text-zinc-300 mb-6 max-w-2xl mx-auto">
-              Our support team is here to help. Reach out to us and we'll get back to you as soon as possible.
+              Our support team is here to help. Reach out to us and we&apos;ll get back to you as soon as possible.
             </p>
             <div className="flex items-center justify-center gap-2 text-blue-400 hover:text-blue-300 transition-colors cursor-pointer group">
               <span className="font-medium">Contact Support</span>
