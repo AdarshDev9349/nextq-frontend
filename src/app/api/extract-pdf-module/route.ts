@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 
-function chunkTextByModule(text: string, moduleParam: string): string[] {
+function chunkTextByModule(text: string): string[] {
   // Try to split by module headings first
   const moduleRegex = /Module\s*\d+[:\-]?/gi;
   const splits = text.split(moduleRegex).map(s => s.trim()).filter(Boolean);
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
     }
 
     // --- RAG: Chunk, Embed, Retrieve ---
-    const chunks = chunkTextByModule(allText, moduleParam);
+    const chunks = chunkTextByModule(allText);
     // Embed all chunks
     const chunkEmbeddings = await Promise.all(chunks.map(chunk => getTogetherEmbedding(chunk)));
     // Embed the module query
@@ -129,12 +129,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-function extractModuleText(text: string, moduleParam: string): string | null {
-  const pattern = new RegExp(`(${moduleParam})\\s*[:\\-]?\\s*([\\s\\S]*?)(?=Module\\s+\\d+|$)`, 'i');
-  const match = text.match(pattern);
-  return match ? match[2].trim() : null;
-}
-
 async function findPdfInDrive(folderId: string, fileName: string, apiKey?: string): Promise<string | null> {
   const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+name='${fileName}'&key=${apiKey}&fields=files(id,name,mimeType)`;
   const res = await fetch(url);
@@ -143,16 +137,15 @@ async function findPdfInDrive(folderId: string, fileName: string, apiKey?: strin
   return json.files[0].id;
 }
 
-async function downloadPdfFromDrive(fileId: string, apiKey?: string): Promise<{ buffer: Buffer | null, debug: any }> {
+async function downloadPdfFromDrive(fileId: string, apiKey?: string): Promise<{ buffer: Buffer | null, debug: Record<string, unknown> }> {
   const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
   const res = await fetch(url);
-  const debug = {
+  const debug: Record<string, unknown> = {
     url,
     status: res.status,
     statusText: res.statusText,
     headers: Object.fromEntries(res.headers.entries()),
     googleDriveApiKey: !!apiKey,
-    // Try to get error body if not ok
     errorBody: !res.ok ? await res.text() : undefined
   };
   if (!res.ok) return { buffer: null, debug };
