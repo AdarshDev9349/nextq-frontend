@@ -62,7 +62,7 @@ const NavbarDemo = () => {
             whileTap={{ scale: 0.95 }}
           >
             <motion.img
-              src="https://assets.aceternity.com/logo-dark.png"
+              src="/nextq-logo.png"
               alt="logo"
               className="h-8 w-8"
               animate={{ rotate: scrolled ? 360 : 0 }}
