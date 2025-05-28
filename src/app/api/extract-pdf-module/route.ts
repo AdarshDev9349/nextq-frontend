@@ -7,17 +7,6 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 
-function chunkTextByModule(text: string): string[] {
-  // Try to split by module headings first
-  const moduleRegex = /Module\s*\d+[:\-]?/gi;
-  const splits = text.split(moduleRegex).map(s => s.trim()).filter(Boolean);
-  // If splitting by module gives too few chunks, fallback to paragraph split
-  if (splits.length < 2) {
-    return text.split(/\n{2,}/).map(s => s.trim()).filter(Boolean);
-  }
-  return splits;
-}
-
 // Helper: Get Azure OpenAI embedding for a chunk
 // IMPORTANT: Set your actual deployment name below (from Azure OpenAI Studio)
 const AZURE_EMBEDDING_DEPLOYMENT = 'text-embedding-ada-002'; // <-- Set to your actual deployment name

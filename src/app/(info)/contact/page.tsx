@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { Mail, User } from "lucide-react"
+import { Mail } from "lucide-react"
 import { useState } from "react"
 
 export default function ContactPage() {
@@ -35,13 +35,13 @@ export default function ContactPage() {
               <Mail className="h-6 w-6 text-blue-500" />
               Contact Us
             </CardTitle>
-            <p className="text-zinc-400">We'd love to hear from you!</p>
+            <p className="text-zinc-400">We&apos;d love to hear from you!</p>
           </CardHeader>
           <CardContent>
             {submitted ? (
               <div className="text-center py-8">
                 <p className="text-green-400 text-lg font-medium mb-2">Thank you for reaching out!</p>
-                <p className="text-zinc-400">We'll get back to you soon.</p>
+                <p className="text-zinc-400">We&apos;ll get back to you soon.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
