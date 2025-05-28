@@ -6,46 +6,6 @@ import fetch from 'node-fetch'; // For Together AI API
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-
-// Helper: Get Azure OpenAI embedding for a chunk
-// IMPORTANT: Set your actual deployment name below (from Azure OpenAI Studio)
-const AZURE_EMBEDDING_DEPLOYMENT = 'text-embedding-ada-002'; // <-- Set to your actual deployment name
-async function getAzureEmbedding(text: string): Promise<number[]> {
-  const apiKey = process.env.AZURE_OPENAI_API_KEY;
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-  if (!apiKey || !endpoint) throw new Error('Missing Azure OpenAI API key or endpoint');
-  const url = `${endpoint}/openai/deployments/${AZURE_EMBEDDING_DEPLOYMENT}/embeddings?api-version=2023-05-15`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'api-key': apiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      input: [text],
-      model: 'text-embedding-ada-002', // or your deployed embedding model name
-    }),
-  });
-  const json = (await res.json()) as any;
-  if (!json.data || !json.data[0] || !json.data[0].embedding) {
-    // Log the full Azure error response for debugging
-    console.error('Azure Embedding API error:', JSON.stringify(json));
-    throw new Error('Embedding failed: ' + (json.error?.message || JSON.stringify(json)));
-  }
-  return json.data[0].embedding;
-}
-
-// Helper: Cosine similarity
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0, normA = 0, normB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
-}
-
 function extractSyllabusSection(text: string): string | null {
   // Find the 'Syllabus' section and extract all text until the next all-caps heading or end of text
   const match = text.match(/Syllabus[\s\S]*?(?=\n[A-Z][A-Z\s]+\n|$)/i);

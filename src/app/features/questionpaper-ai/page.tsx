@@ -77,9 +77,10 @@ const QuestionPaperAIPage = () => {
       window.URL.revokeObjectURL(url)
       setLoading(false)
       setProgress(100)
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       setLoading(false)
-      alert(err.message || "Unknown error occurred.")
+      alert(error.message || "Unknown error occurred.")
     }
   }
 

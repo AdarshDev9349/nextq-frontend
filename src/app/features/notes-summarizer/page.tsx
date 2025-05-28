@@ -77,8 +77,9 @@ const NoteSummarizerPage = () => {
       a.remove()
       window.URL.revokeObjectURL(url)
       setLoading(false)
-    } catch (err: any) {
-      alert(err.message || "Unknown error occurred.")
+    } catch (err) {
+      const error = err as Error;
+      alert(error.message || "Unknown error occurred.")
       setLoading(false)
     }
   }

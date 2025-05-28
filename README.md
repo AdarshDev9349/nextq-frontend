@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NextQ: AI-Powered Exam Paper & Notes Generator
 
-## Getting Started
+NextQ is a modern EdTech platform that uses AI to automate question paper generation, notes summarization, and more. Built with Next.js, FastAPI, and Azure OpenAI, it empowers students and educators to create, summarize, and analyze academic content with ease.
 
-First, run the development server:
+## 🚀 Features
+- **Custom Question Paper Generation**: Upload syllabus and previous papers, and generate new question papers using AI.
+- **Notes Summarizer**: Upload your notes and get concise, actionable summaries as PDF.
+- **Predictive Question Paper**: Analyze past papers to generate likely exam questions.
+- **Modern UI**: Built with Next.js, shadcn/ui, and a beautiful dark theme.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠️ Getting Started
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd nextq
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
+3. **Set up environment variables:**
+   - Copy `.env.local.example` to `.env.local` and fill in your API keys (Azure OpenAI, Together AI, etc).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. **Open your browser:**
+   Visit [http://localhost:3000](http://localhost:3000) to use the app.
 
-## Learn More
+## 📝 Usage
+- **Custom Question Paper:** Go to `/features/custom-question-paper` to generate question papers from your syllabus and previous papers.
+- **Notes Summarizer:** Go to `/features/notes-summarizer` to upload notes and get a summarized PDF.
+- **Predictive Question Paper:** Go to `/features/questionpaper-ai` to generate likely exam questions from past papers.
 
-To learn more about Next.js, take a look at the following resources:
+## 🧑‍💻 Tech Stack
+- **Frontend:** Next.js, React, shadcn/ui
+- **Backend:** FastAPI, Azure OpenAI, Together AI
+- **PDF Handling:** fpdf, pdfplumber
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌐 Deploy on Vercel
+The easiest way to deploy is with [Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📚 Learn More
+- [Next.js Documentation](https://nextjs.org/docs)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Azure OpenAI](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/)
 
-## Deploy on Vercel
+## 🤝 Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 License
+[MIT](LICENSE)
