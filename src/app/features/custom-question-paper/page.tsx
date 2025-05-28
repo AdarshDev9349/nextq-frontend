@@ -21,9 +21,9 @@ function buildAIPrompt({
   module?: string;
 }) {
   let prompt = `You are an expert university exam setter. Strictly follow these instructions:\n\n`;
-  prompt += `1. The following text is extracted from the PDF for module '${module}'. It may contain sample/model questions or content related to a topic, but it is NOT the full syllabus.\n`;
-  prompt += `2. Carefully read and understand the topic or subject area that this text is about:\n"""\n${moduleText}\n"""\n`;
-  prompt += `3. Based on your understanding of the topic from the above text, generate new, original questions for the subject '${subject}' as per the template below.\n`;
+  prompt += `1. The following text is the official syllabus for module '${module}', extracted from the university syllabus PDF. It may contain sample/model questions or content related to a topic, but it is the authoritative syllabus for this module.\n`;
+  prompt += `2. Carefully read and understand the topic or subject area that this syllabus text is about:\n"""\n${moduleText}\n"""\n`;
+  prompt += `3. Based on your understanding of the topic from the above syllabus, generate new, original questions for the subject '${subject}' as per the template below.\n`;
   prompt += `4. DO NOT copy or paraphrase the sample/model questions from the text. Instead, infer the topic and create fresh questions relevant to that topic.\n`;
   prompt += `5. Fill in the question paper template below. The total marks must be ${totalMarks}.\n`;
   prompt += `6. DO NOT add, remove, or change any sections, headings, or formatting in the template.\n`;
@@ -56,7 +56,7 @@ const Page = () => {
     semester: '',
     subject: '',
     customSubject: '',
-    module: '', // will be set via dropdown now
+    module: '', 
     numQuestions: '',
   });
   const [sections, setSections] = useState([

@@ -48,14 +48,39 @@ const NoteSummarizerPage = () => {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // You can add upload/summarization logic here
-    setTimeout(() => {
+    try {
+      const formData = new FormData()
+      if (form.file) formData.append("file", form.file)
+      if (form.prompt) formData.append("prompt", form.prompt)
+      // Send to our Next.js API route
+      const res = await fetch("/api/summarize-note", {
+        method: "POST",
+        body: formData,
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        alert(error.error || "Failed to summarize note.")
+        setLoading(false)
+        return
+      }
+      // Download the summarized PDF
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "summary.pdf"
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
       setLoading(false)
-      alert("Summary generated successfully!")
-    }, 2000)
+    } catch (err: any) {
+      alert(err.message || "Unknown error occurred.")
+      setLoading(false)
+    }
   }
 
   return (

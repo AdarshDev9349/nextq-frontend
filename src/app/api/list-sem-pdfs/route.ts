@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { semesterFolderLinks, extractDriveFolderId } from "@/lib/semesterFolders";
 
-// API: /api/list-sem-pdfs?semester=1-2
+
 export async function GET(req: NextRequest) {
   const GOOGLE_DRIVE_API_KEY = process.env.GOOGLE_DRIVE_API_KEY || "";
   const { searchParams } = new URL(req.url);

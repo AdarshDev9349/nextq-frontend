@@ -42,23 +42,45 @@ const QuestionPaperAIPage = () => {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Replace the old handleSubmit with the new async version for API integration
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setProgress(0)
 
-    // Simulate progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setLoading(false)
-          alert("Question paper generated successfully!")
-          return 100
-        }
-        return prev + 10
+    try {
+      const formData = new FormData()
+      // FastAPI expects: pyq_files (multiple), syllabus_file (single, optional)
+      form.questionpapers.forEach((file) => {
+        formData.append("pyq_files", file)
       })
-    }, 200)
+      if (form.syllabus) formData.append("syllabus_file", form.syllabus)
+      // subject is not required by FastAPI endpoint, so do not send
+
+      const res = await fetch("http://127.0.0.1:8000/generate-question-paper/", {
+        method: "POST",
+        body: formData,
+      })
+      if (!res.ok) {
+        setLoading(false)
+        alert("Failed to generate question paper.")
+        return
+      }
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "predicted_questions.pdf"
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      setLoading(false)
+      setProgress(100)
+    } catch (err: any) {
+      setLoading(false)
+      alert(err.message || "Unknown error occurred.")
+    }
   }
 
   const formatFileSize = (bytes: number) => {

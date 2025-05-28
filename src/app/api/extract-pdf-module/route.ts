@@ -18,21 +18,31 @@ function chunkTextByModule(text: string): string[] {
   return splits;
 }
 
-// Helper: Get Together AI embedding for a chunk
-async function getTogetherEmbedding(text: string): Promise<number[]> {
-  const res = await fetch('https://api.together.xyz/v1/embeddings', {
+// Helper: Get Azure OpenAI embedding for a chunk
+// IMPORTANT: Set your actual deployment name below (from Azure OpenAI Studio)
+const AZURE_EMBEDDING_DEPLOYMENT = 'text-embedding-ada-002'; // <-- Set to your actual deployment name
+async function getAzureEmbedding(text: string): Promise<number[]> {
+  const apiKey = process.env.AZURE_OPENAI_API_KEY;
+  const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
+  if (!apiKey || !endpoint) throw new Error('Missing Azure OpenAI API key or endpoint');
+  const url = `${endpoint}/openai/deployments/${AZURE_EMBEDDING_DEPLOYMENT}/embeddings?api-version=2023-05-15`;
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.TOGETHER_API_KEY}`,
+      'api-key': apiKey,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'togethercomputer/m2-bert-80M-8k-retrieval',
       input: [text],
+      model: 'text-embedding-ada-002', // or your deployed embedding model name
     }),
   });
-  const json = (await res.json()) as { data?: { embedding: number[] }[] };
-  if (!json.data || !json.data[0] || !json.data[0].embedding) throw new Error('Embedding failed');
+  const json = (await res.json()) as any;
+  if (!json.data || !json.data[0] || !json.data[0].embedding) {
+    // Log the full Azure error response for debugging
+    console.error('Azure Embedding API error:', JSON.stringify(json));
+    throw new Error('Embedding failed: ' + (json.error?.message || JSON.stringify(json)));
+  }
   return json.data[0].embedding;
 }
 
@@ -45,6 +55,23 @@ function cosineSimilarity(a: number[], b: number[]): number {
     normB += b[i] * b[i];
   }
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+function extractSyllabusSection(text: string): string | null {
+  // Find the 'Syllabus' section and extract all text until the next all-caps heading or end of text
+  const match = text.match(/Syllabus[\s\S]*?(?=\n[A-Z][A-Z\s]+\n|$)/i);
+  return match ? match[0] : null;
+}
+
+function extractModuleFromSyllabus(syllabusText: string, moduleParam: string): string | null {
+  // Find the requested module (e.g., 'Module 2') and extract until the next 'Module <number>' or end
+  // Use a global regex to find all module sections
+  const moduleRegex = /Module\s*\d+[\s\S]*?(?=Module\s*\d+|$)/gi;
+  const modules = syllabusText.match(moduleRegex);
+  if (!modules) return null;
+  // Find the module that matches the requested moduleParam (case-insensitive)
+  const found = modules.find(m => m.toLowerCase().startsWith(moduleParam.toLowerCase()));
+  return found ? found.trim() : null;
 }
 
 export async function GET(req: NextRequest) {
@@ -110,18 +137,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Failed to extract text with pdfjs", details: String(err) }, { status: 500 });
     }
 
-    // --- RAG: Chunk, Embed, Retrieve ---
-    const chunks = chunkTextByModule(allText);
-    // Embed all chunks
-    const chunkEmbeddings = await Promise.all(chunks.map(chunk => getTogetherEmbedding(chunk)));
-    // Embed the module query
-    const queryEmbedding = await getTogetherEmbedding(moduleParam);
-    // Compute similarity
-    const scored = chunks.map((chunk, i) => ({ chunk, score: cosineSimilarity(chunkEmbeddings[i], queryEmbedding) }));
-    // Sort by score, take top 3
-    const topChunks = scored.sort((a, b) => b.score - a.score).slice(0, 3).map(s => s.chunk);
-    // Return the top chunks as context
-    return NextResponse.json({ text: topChunks.join('\n\n') });
+    // --- Extract Syllabus Section and Module ---
+    const syllabusText = extractSyllabusSection(allText);
+    if (!syllabusText) {
+      return NextResponse.json({ error: "Could not find Syllabus section in PDF", preview: allText.slice(0, 500) }, { status: 404 });
+    }
+    const moduleText = extractModuleFromSyllabus(syllabusText, moduleParam);
+    if (!moduleText) {
+      return NextResponse.json({ error: `Could not find ${moduleParam} in Syllabus section`, preview: syllabusText.slice(0, 500) }, { status: 404 });
+    }
+    // Return the extracted module text
+    return NextResponse.json({ text: moduleText });
   } catch (err) {
     console.error("API Error:", err);
     return NextResponse.json({ error: "Internal server error", details: String(err) }, { status: 500 });
