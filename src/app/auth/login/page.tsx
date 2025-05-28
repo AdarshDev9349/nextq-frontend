@@ -13,17 +13,14 @@ export default function LoginPage() {
 
 const handleclick = async (e: React.FormEvent) => {
   e.preventDefault();
-type User = {
-  id: string;
-  username: string;
-  password: string;
-};
-
+  // Only fetch the user that matches the username (if your mock API supports filtering)
   try {
-    const res = await fetch('https://68238d0a65ba058033972501.mockapi.io/api/users');
-    const users = await res.json();
+    // Define User type inline for filtering
+    type User = { id: string; username: string; password: string };
+    const res = await fetch(`https://68238d0a65ba058033972501.mockapi.io/api/users?username=${encodeURIComponent(formData.username)}`);
+    const users: User[] = await res.json();
     const matchedUser = users.find(
-      (user:User) =>
+      (user) =>
         user.username === formData.username && user.password === formData.password
     );
 
@@ -31,7 +28,7 @@ type User = {
       const token = btoa(JSON.stringify({ id: matchedUser.id, username: matchedUser.username }));
 
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(matchedUser));
+      localStorage.setItem('user', JSON.stringify({ id: matchedUser.id, username: matchedUser.username }));
       router.push('/features')
     } else {
       alert('❌ Invalid credentials');
