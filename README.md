@@ -59,9 +59,3 @@ The easiest way to deploy is with [Vercel](https://vercel.com/new?utm_medium=def
 - [Next.js Documentation](https://nextjs.org/docs)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [Azure OpenAI](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/)
-
-## 🤝 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
-## 📄 License
-[MIT](LICENSE)
